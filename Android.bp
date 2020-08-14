@@ -8,6 +8,7 @@ libvsomeip_srcs = [
    "implementation/utility/**/*.cpp",
    "implementation/plugin/**/*.cpp",
    "implementation/security/**/*.cpp",
+   "implementation/logger/**/*.cpp",
 ]
 
 libvsomeip_cfg_srcs = [
@@ -33,15 +34,17 @@ cc_defaults {
         "-Wno-unused-private-field",
         "-Wno-unused-lambda-capture",
         "-Wno-unused-variable",
+        "-Wno-unused-local-typedef",
         "-Wno-sign-compare",
         "-Wno-format",
         "-Wno-header-guard",
-        "-Wno-overloaded-virtual"
+        "-Wno-overloaded-virtual",
+        "-Wno-implicit-fallthrough"
     ]
 }
 
 cc_library_shared {
-    name: "libvsomeip",
+    name: "libvsomeip3",
     vendor: true,
 
     srcs: libvsomeip_srcs,
@@ -58,7 +61,7 @@ cc_library_shared {
 
     local_include_dirs: [
         "interface",
-        "implementation/helper/1.66"
+        "implementation/helper/1.70"
     ],
 
     export_include_dirs: [
@@ -66,7 +69,6 @@ cc_library_shared {
     ],
 
     shared_libs: [
-        "libboost_log",
         "libboost_system",
         "libboost_thread",
         "libboost_filesystem",
@@ -76,7 +78,7 @@ cc_library_shared {
 }
 
 cc_library_shared {
-    name: "libvsomeip_cfg",
+    name: "libvsomeip3-cfg",
     vendor: true,
 
     srcs: libvsomeip_cfg_srcs,
@@ -89,18 +91,18 @@ cc_library_shared {
 
     local_include_dirs: [
         "interface",
-        "implementation/helper/1.66"
+        "implementation/helper/1.70"
     ],
 
     shared_libs: [
-        "libvsomeip",
-        "libboost_log",
+        "libvsomeip3",
+        "libboost_system",
         "libboost_filesystem"
     ]
 }
 
 cc_library_shared {
-    name: "libvsomeip_e2e",
+    name: "libvsomeip3-e2e",
     vendor: true,
 
     srcs: libvsomeip_e2e_srcs,
@@ -113,17 +115,16 @@ cc_library_shared {
 
     local_include_dirs: [
         "interface",
-        "implementation/helper/1.66"
+        "implementation/helper/1.70"
     ],
 
     shared_libs: [
-       "libvsomeip",
-       "libboost_log"
+       "libvsomeip3"
     ]
 }
 
 cc_library_shared {
-    name: "libvsomeip_sd",
+    name: "libvsomeip3-sd",
     vendor: true,
 
     srcs: libvsomeip_sd_srcs,
@@ -136,11 +137,11 @@ cc_library_shared {
 
     local_include_dirs: [
         "interface",
-        "implementation/helper/1.66"
+        "implementation/helper/1.70"
     ],
 
     shared_libs: [
-        "libvsomeip",
-        "libboost_log"
+        "libvsomeip3",
+        "libboost_thread"
     ]
 }

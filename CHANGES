@@ -1,6 +1,51 @@
 Changes
 =======
 
+v3.1.16.1
+- Restore IPv6 within UDP server endpoint
+- AOSP build adaptation to vsomeip3 libraries
+
+v3.1.16
+- Fixed race condition when leaving multicast group
+- Do not busy loop when receiving garbage data on local endpoint
+
+v3.1.15
+- Ensure to remove the correct subscription object on unsubscribe
+- Implemented support to define "secure services"
+- Speedup security policy handling
+- Enable building with boost v1.73.0
+
+v3.1.14
+- Fixed race conditions (application registration, subscription)
+
+v3.1.13
+- Abort operation when doing a full rejoin
+- Protect access when consuming a policy
+- Decrease wait time for composite send operations 
+- Reimplemented logger without using boost::log
+
+v3.1.12
+- Ensure composite send operations have finished before resetting an endpoint.
+  Otherwise this may cause a crash within boost.asio.
+- Always use the assigned client identifier when sending messages from a proxy.
+- Add TTL to initial timestamp to avoid immediate expiration.
+
+v3.1.11
+- Preparation for new IPsec plugin (3.1.1)
+
+v3.1.10
+- Reset subscriptions on stop offer service
+- Protect access to security policy contents
+- Tolerate wrong/incomplete event registrations in compatibility mode
+- Avoid buffering of pending subscriptions
+
+v3.1.9
+- Fix race condition when processing multicast messages
+
+v3.1.8
+- Fix deadlock when sending messages
+- Fix race condition when processing SD messages
+
 v3.1.7
 - Fix stop subscribes when a service is released
 - Improve handling of time stamps when processing subscriptions

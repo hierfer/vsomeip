@@ -72,13 +72,20 @@ public:
     VSOMEIP_EXPORT bool has_file_log() const;
     VSOMEIP_EXPORT bool has_dlt_log() const;
     VSOMEIP_EXPORT const std::string & get_logfile() const;
-    VSOMEIP_EXPORT boost::log::trivial::severity_level get_loglevel() const;
+    VSOMEIP_EXPORT vsomeip_v3::logger::level_e get_loglevel() const;
 
     VSOMEIP_EXPORT std::string get_unicast_address(service_t _service, instance_t _instance) const;
 
     VSOMEIP_EXPORT uint16_t get_reliable_port(service_t _service, instance_t _instance) const;
     VSOMEIP_EXPORT bool has_enabled_magic_cookies(std::string _address, uint16_t _port) const;
     VSOMEIP_EXPORT uint16_t get_unreliable_port(service_t _service,
+            instance_t _instance) const;
+
+    VSOMEIP_EXPORT major_version_t get_major_version(service_t _service,
+            instance_t _instance) const;
+    VSOMEIP_EXPORT minor_version_t get_minor_version(service_t _service,
+            instance_t _instance) const;
+    VSOMEIP_EXPORT ttl_t get_ttl(service_t _service,
             instance_t _instance) const;
 
     VSOMEIP_EXPORT void get_configured_timing_requests(
@@ -191,13 +198,26 @@ public:
     VSOMEIP_EXPORT std::uint32_t get_max_tcp_restart_aborts() const;
     VSOMEIP_EXPORT std::uint32_t get_max_tcp_connect_time() const;
 
-    VSOMEIP_EXPORT bool sd_acceptance_required(const boost::asio::ip::address& _address,
-                                            std::uint16_t _port) const;
+    VSOMEIP_EXPORT bool is_protected_device(
+            const boost::asio::ip::address& _address) const;
+    VSOMEIP_EXPORT bool is_protected_port(
+            const boost::asio::ip::address& _address,
+            std::uint16_t _port, bool _reliable) const;
+    VSOMEIP_EXPORT bool is_secure_port(
+            const boost::asio::ip::address& _address,
+            std::uint16_t _port, bool _reliable) const;
 
-    VSOMEIP_EXPORT void set_sd_acceptance_required(
-            const boost::asio::ip::address& _address, std::uint16_t _port,
-            const std::string& _path, bool _enable);
-    VSOMEIP_EXPORT sd_acceptance_required_map_t get_sd_acceptance_required();
+    VSOMEIP_EXPORT void set_sd_acceptance_rule(
+            const boost::asio::ip::address& _address,
+            port_range_t _port_range, port_type_e _type,
+            const std::string& _path, bool _reliable, bool _enable, bool _default);
+    VSOMEIP_EXPORT void set_sd_acceptance_rules(
+                const sd_acceptance_rules_t& _rules, bool _enable);
+    VSOMEIP_EXPORT sd_acceptance_rules_t get_sd_acceptance_rules();
+    VSOMEIP_EXPORT void set_sd_acceptance_rules_active(
+            const boost::asio::ip::address& _address, bool _enable);
+
+    VSOMEIP_EXPORT bool is_secure_service(service_t _service, instance_t _instance) const;
 
     VSOMEIP_EXPORT std::uint32_t get_udp_receive_buffer_size() const;
 
@@ -302,7 +322,8 @@ private:
                 std::map<event_t, std::shared_ptr<debounce>> &_debounces);
     void load_event_debounce_ignore(const boost::property_tree::ptree &_tree,
             std::map<std::size_t, byte_t> &_ignore);
-    void load_sd_acceptance_required(const configuration_element &_element);
+    void load_acceptances(const configuration_element &_element);
+    void load_acceptance_data(const boost::property_tree::ptree &_tree);
     void load_udp_receive_buffer_size(const configuration_element &_element);
     bool load_npdu_debounce_times_configuration(
             const std::shared_ptr<service>& _service,
@@ -348,6 +369,9 @@ private:
 
     void load_tcp_restart_settings(const configuration_element &_element);
 
+    void load_secure_services(const configuration_element &_element);
+    void load_secure_service(const boost::property_tree::ptree &_tree);
+
 private:
     std::mutex mutex_;
 
@@ -370,7 +394,7 @@ protected:
     bool has_file_log_;
     bool has_dlt_log_;
     std::string logfile_;
-    boost::log::trivial::severity_level loglevel_;
+    vsomeip_v3::logger::level_e loglevel_;
 
     std::map<std::string,
         std::tuple<
@@ -512,7 +536,8 @@ protected:
     uint32_t tcp_connect_time_max_;
 
     mutable std::mutex sd_acceptance_required_ips_mutex_;
-    sd_acceptance_required_map_t sd_acceptance_required_ips_;
+    sd_acceptance_rules_t sd_acceptance_rules_;
+    std::set<boost::asio::ip::address> sd_acceptance_rules_active_;
 
     bool has_issued_methods_warning_;
     bool has_issued_clients_warning_;
@@ -525,6 +550,9 @@ protected:
     std::chrono::nanoseconds npdu_default_max_retention_resp_;
 
     std::uint32_t shutdown_timeout_;
+
+    mutable std::mutex secure_services_mutex_;
+    std::map<service_t, std::set<instance_t> > secure_services_;
 };
 
 } // namespace cfg
